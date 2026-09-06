@@ -203,12 +203,19 @@
         .item-card:hover { background-color: var(--item-btn-hover); }
         .item-card.selected { border-color: var(--primary-btn); }
 
+        /* Updated Icon CSS */
         .item-icon {
             width: 36px; height: 36px;
             background-color: #2D3748;
             border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
             font-weight: bold; margin-bottom: 8px;
+            object-fit: cover;
+            overflow: hidden;
+        }
+        
+        img.item-icon {
+            background-color: transparent;
         }
 
         .item-name { font-size: 12px; font-weight: bold; margin-bottom: 4px; }
@@ -397,10 +404,12 @@
             for (const [item, price] of Object.entries(PRODUCE_ITEMS)) {
                 if (item.toLowerCase().includes(search)) {
                     const div = document.createElement('div');
+                    const imageName = item.toLowerCase().replace(/\s+/g, '-'); // e.g., 'wild-mint'
+                    
                     div.className = `item-card ${shopSelected === item ? 'selected' : ''}`;
                     div.onclick = () => selectShopItem(item);
                     div.innerHTML = `
-                        <div class="item-icon">${item.charAt(0)}</div>
+                        <img class="item-icon" src="icons/${imageName}.png" alt="${item}" onerror="this.outerHTML='<div class=\\'item-icon\\'>${item.charAt(0)}</div>'">
                         <div class="item-name">${item}</div>
                         <div class="item-price">$${price.toFixed(2)}</div>
                     `;
@@ -462,10 +471,12 @@
             for (const recipe of Object.keys(RECIPES)) {
                 if (recipe.toLowerCase().includes(search)) {
                     const div = document.createElement('div');
+                    const imageName = recipe.toLowerCase().replace(/\s+/g, '-');
+                    
                     div.className = `item-card ${craftSelected === recipe ? 'selected' : ''}`;
                     div.onclick = () => selectCraftItem(recipe);
                     div.innerHTML = `
-                        <div class="item-icon">${recipe.charAt(0)}</div>
+                        <img class="item-icon" src="icons/${imageName}.png" alt="${recipe}" onerror="this.outerHTML='<div class=\\'item-icon\\'>${recipe.charAt(0)}</div>'">
                         <div class="item-name">${recipe}</div>
                     `;
                     container.appendChild(div);
@@ -511,10 +522,12 @@
             for (const [crop, price] of Object.entries(CROPS)) {
                 if (crop.toLowerCase().includes(search)) {
                     const div = document.createElement('div');
+                    const imageName = crop.toLowerCase().replace(/\s+/g, '-');
+                    
                     div.className = `item-card ${seedSelected === crop ? 'selected' : ''}`;
                     div.onclick = () => selectSeedItem(crop, price);
                     div.innerHTML = `
-                        <div class="item-icon">${crop.charAt(0)}</div>
+                        <img class="item-icon" src="icons/${imageName}.png" alt="${crop}" onerror="this.outerHTML='<div class=\\'item-icon\\'>${crop.charAt(0)}</div>'">
                         <div class="item-name">${crop}</div>
                         <div class="item-price">$${price.toFixed(2)}/seed</div>
                     `;
