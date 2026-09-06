@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Ranch Manager System ✨</title>
+    <style>
+        /* ==========================================
+           🎨 UI COLOR CUSTOMIZATION (From Python)
+           ========================================== */
+        :root {
+            --app-bg: #121212;
+            --sidebar-bg: #181818;
+            --panel-bg: #1E1E1E;
+            --panel-border: #333333;
+            --entry-bg: #2A2A2A;
+            --entry-border: #374151;
+            --text-main: #F3F4F6;
+            --text-muted: #9CA3AF;
+            --nav-text-idle: #9CA3AF;
+            --nav-text-active: #4ADE80;
+            --nav-bg-active: #163323;
+            --nav-hover: #262626;
+            --item-btn-bg: #252526;
+            --item-btn-hover: #3E3E42;
+            --item-btn-border: #333333;
+            --primary-btn: #2FA572;
+            --primary-btn-hover: #1E7A52;
+            --receipt-bg: #141414;
+            --receipt-border: #333333;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: var(--app-bg);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ---------------- SIDEBAR ---------------- */
+        #sidebar {
+            width: 230px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--panel-border);
+            display: flex;
+            flex-direction: column;
+            padding-top: 30px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            padding: 0 20px 25px 20px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            color: var(--nav-text-idle);
+            border: none;
+            text-align: left;
+            padding: 15px 20px;
+            margin: 4px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background-color: var(--nav-hover);
+        }
+
+        .nav-btn.active {
+            background-color: var(--nav-bg-active);
+            color: var(--nav-text-active);
+        }
+
+        /* ---------------- MAIN CONTENT AREA ---------------- */
+        #main-container {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .view-section {
+            display: none; /* Hidden by default, handled by JS */
+            height: 100%;
+            gap: 20px;
+        }
+
+        .view-section.active {
+            display: flex;
+        }
+
+        .panel-left {
+            flex: 3;
+            background-color: var(--panel-bg);
+            border: 2px solid var(--panel-border);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+        }
+
+        .panel-right {
+            flex: 2;
+            background-color: var(--panel-bg);
+            border: 2px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h2 { margin: 0 0 15px 0; font-size: 18px; }
+
+        /* Inputs & Buttons */
+        input {
+            background-color: var(--entry-bg);
+            border: 1px solid var(--entry-border);
+            color: var(--text-main);
+            padding: 10px 15px;
+            border-radius: 6px;
+            outline: none;
+            font-family: inherit;
+            margin-bottom: 15px;
+        }
+
+        button.action-btn {
+            background-color: var(--primary-btn);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 15px;
+        }
+
+        button.action-btn:hover { background-color: var(--primary-btn-hover); }
+
+        /* Catalog Grids */
+        .catalog-scroll {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 12px;
+            padding-right: 5px;
+        }
+
+        /* Custom Scrollbar for Dark Mode */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        .item-card {
+            background-color: var(--item-btn-bg);
+            border: 1px solid var(--item-btn-border);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 85px;
+        }
+
+        .item-card:hover { background-color: var(--item-btn-hover); }
+        .item-card.selected { border-color: var(--primary-btn); }
+
+        .item-icon {
+            width: 36px; height: 36px;
+            background-color: #2D3748;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; margin-bottom: 8px;
+        }
+
+        .item-name { font-size: 12px; font-weight: bold; margin-bottom: 4px; }
+        .item-price { font-size: 11px; color: var(--text-muted); }
+
+        /* Output Text Areas */
+        .receipt-box {
+            flex-grow: 1;
+            background-color: var(--receipt-bg);
+            border: 1px solid var(--receipt-border);
+            border-radius: 6px;
+            padding: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            overflow-y: auto;
+        }
+
+        .seed-results {
+            background-color: var(--receipt-bg);
+            border: 1px solid var(--receipt-border);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            margin-top: auto;
+        }
+        .res-label { color: var(--text-muted); font-size: 13px; margin-bottom: 5px;}
+        .res-val { color: var(--primary-btn); font-size: 18px; font-weight: bold;}
+    </style>
+</head>
+<body>
+
+    <!-- ---------------- SIDEBAR ---------------- -->
+    <nav id="sidebar">
+        <div class="logo">Ranch Manager</div>
+        <button class="nav-btn active" onclick="switchView('shopping')" id="btn-shopping">🛒 Shopping List</button>
+        <button class="nav-btn" onclick="switchView('crafting')" id="btn-crafting">🛠️ Crafting Calculator</button>
+        <button class="nav-btn" onclick="switchView('seeds')" id="btn-seeds">🌾 Seed Calculator</button>
+    </nav>
+
+    <!-- ---------------- MAIN CONTENT ---------------- -->
+    <div id="main-container">
+
+        <!-- VIEW 1: SHOPPING -->
+        <section id="view-shopping" class="view-section active">
+            <div class="panel-left">
+                <h2>Produce Catalog</h2>
+                <input type="text" id="shop-search" placeholder="Search produce... 🔍" oninput="renderShopCatalog()">
+                <div class="catalog-scroll" id="shop-catalog"></div>
+            </div>
+            <div class="panel-right">
+                <h2 id="lbl-shop-sel">Select an Item</h2>
+                <input type="number" id="shop-qty" placeholder="Quantity" value="1" min="1">
+                <button class="action-btn" onclick="addToCart()">Add to Cart ➔</button>
+                <div class="receipt-box" id="shop-receipt">Your cart is empty.</div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: CRAFTING -->
+        <section id="view-crafting" class="view-section">
+            <div class="panel-left">
+                <h2>Crafting Recipes</h2>
+                <input type="text" id="craft-search" placeholder="Search recipes... 🔍" oninput="renderCraftCatalog()">
+                <div class="catalog-scroll" id="craft-catalog"></div>
+            </div>
+            <div class="panel-right">
+                <h2 id="lbl-craft-sel">Select Recipe</h2>
+                <input type="number" id="craft-qty" placeholder="Batch Quantity" value="1" min="1">
+                <button class="action-btn" onclick="calcCrafting()">Calculate Ingredients 🛠️</button>
+                <div class="receipt-box" id="craft-receipt">Select a recipe to view ingredients.</div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: SEEDS -->
+        <section id="view-seeds" class="view-section">
+            <div class="panel-left">
+                <h2>Crop Selection</h2>
+                <input type="text" id="seed-search" placeholder="Search seeds... 🔍" oninput="renderSeedCatalog()">
+                <div class="catalog-scroll" id="seed-catalog"></div>
+            </div>
+            <div class="panel-right">
+                <h2 id="lbl-seed-sel">Select a Crop</h2>
+                <p id="lbl-seed-info" style="color: var(--text-muted); font-size: 13px; margin-top:-10px; margin-bottom: 20px;">Seed Price: -- | Yield: 3 per seed (Bundles of 5)</p>
+                <label style="font-size: 13px; font-weight:bold; margin-bottom: 5px;">Desired Harvest Quantity</label>
+                <input type="number" id="seed-qty" placeholder="e.g. 100" min="0">
+                <button class="action-btn" onclick="calcSeeds()">Calculate Seeds Needed 🌾</button>
+                
+                <div class="seed-results">
+                    <div>
+                        <div class="res-label">Seeds Needed</div>
+                        <div class="res-val" id="res-seeds">0 Seeds</div>
+                    </div>
+                    <div>
+                        <div class="res-label">Total Seed Cost</div>
+                        <div class="res-val" id="res-cost">$0.00</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ---------------- JAVASCRIPT LOGIC ---------------- -->
+    <script>
+        // ==========================================
+        // 📦 DATA TABLES (Imported from Python)
+        // ==========================================
+        
+        // Helper to extract common produce items easily
+        const PRODUCE_ITEMS = {
+            "Apple": 0.25, "Alaskan Ginseng": 0.25, "American Ginseng": 0.25, "Bitterweed": 0.25, 
+            "Bulrush": 0.25, "Creeping Thyme": 0.25, "Crows Garlic": 0.25, "Desert Sage": 0.25, 
+            "English Mace": 0.25, "Hummingbird Sage": 0.25, "Oleander Sage": 0.25, "Oregano": 0.25, 
+            "Peppercorn": 0.25, "Red Sage": 0.25, "Wild Mint": 0.25, "Yarrow": 0.25, "Black Berry": 0.25, 
+            "Black Currant": 0.25, "Blue Berry": 0.25, "Coffee": 0.25, "Creek Plum": 0.25, 
+            "Evergreen Huckleberry": 0.25, "Golden Currant": 0.25, "Juniper Berry": 0.25, "Peach": 0.25, 
+            "Red Raspberry": 0.25, "Strawberry": 0.25, "Tomato": 0.25, "Wintergreen Berry": 0.25, 
+            "Wild Feverfew": 0.25, "Grape": 0.25, "Pumpkin": 0.25, "Indian Tobacco": 0.25, "Artichoke": 0.25, 
+            "Broccoli": 0.25, "Burdock Root": 0.25, "Corn": 0.25, "Carrot": 0.25, "Vidalia Onion": 0.25, 
+            "Potato": 0.25, "Saltbush": 0.25, "Wild Carrot": 0.25, "Wild Rhubarb": 0.25, "Agarita": 0.25, 
+            "Blood Flower": 0.25, "Cardinal Flower": 0.25, "Chocolate Daisy": 0.25, "Hop": 0.25, 
+            "Prairie Poppy": 0.25, "Texas Bonnet": 0.25, "Violet Snowdrop": 0.25, "Wisteria": 0.25, 
+            "Agave": 0.25, "Hemp": 0.25, "Milkweed": 0.25, "Tea Leaf": 0.25, "Tobacco": 0.25, 
+            "Cocoa": 0.25, "Sugarcane": 0.25, "Vanilla": 0.25, "Barley": 0.25, "Wheat": 0.25, "Flax": 0.25, 
+            "Rice": 0.25, "Bay Bolete": 0.25, "Chanterelles": 0.25, "Parasol mushroom": 0.25, "Ramshead": 0.25, 
+            "Milk": 0.25, "Eggs": 0.15, "Beef": 0.85, "Pork": 0.60, "Mutton": 0.85, "Venison": 0.85, 
+            "Birdmeat": 0.60, "Animal Fat": 0.25
+        };
+
+        const RECIPES = {
+            "Horse Medicine": { ingredients: {"Alaskan Ginseng": 2, "Bitterweed": 1, "Carrot": 3} },
+            "Hearty Stew": { ingredients: {"Potato": 3, "Carrot": 2, "Oregano": 1, "Beef": 1} }
+        };
+
+        const CROPS = {
+            "Alaskan Ginseng": 0.45, "American Ginseng": 0.45, "Bitterweed": 0.45, "Bulrush": 0.45, 
+            "Creeping Thyme": 0.45, "Crows Garlic": 0.45, "Desert Sage": 0.45, "English Mace": 0.45, 
+            "Hummingbird Sage": 0.45, "Oleander Sage": 0.45, "Oregano": 0.45, "Peppercorn": 0.45, 
+            "Red Sage": 0.45, "Wild Mint": 0.45, "Yarrow": 0.45, "Apple": 0.45, "Black Berry": 0.45, 
+            "Black Currant": 0.45, "Blue Berry": 0.45, "Coffee": 0.45, "Creek Plum": 0.45, 
+            "Evergreen Huckleberry": 0.45, "Golden Currant": 0.45, "Juniper Berry": 0.45, "Peach": 0.45, 
+            "Red Raspberry": 0.45, "Strawberry": 0.45, "Tomato": 0.45, "Wintergreen Berry": 0.45, 
+            "Wild Feverfew": 0.45, "Grape": 0.45, "Pumpkin": 0.45, "Indian Tobacco": 0.45, "Artichoke": 0.45, 
+            "Broccoli": 0.45, "Burdock Root": 0.45, "Corn": 0.45, "Carrot": 0.45, "Vidalia Onion": 0.45, 
+            "Potato": 0.45, "Saltbush": 0.45, "Wild Carrot": 0.45, "Wild Rhubarb": 0.45, "Agarita": 0.45, 
+            "Blood Flower": 0.45, "Cardinal Flower": 0.45, "Chocolate Daisy": 0.45, "Hop": 0.45, 
+            "Prairie Poppy": 0.45, "Texas Bonnet": 0.45, "Violet Snowdrop": 0.45, "Wisteria": 0.45, 
+            "Agave": 0.45, "Hemp": 0.45, "Milkweed": 0.45, "Tea Leaf": 0.45, "Tobacco": 0.45, "Cocoa": 0.45, 
+            "Sugarcane": 0.45, "Vanilla": 0.45, "Barley": 0.45, "Wheat": 0.45, "Flax": 0.45, "Rice": 0.45, 
+            "Bay Bolete": 0.45, "Chanterelles": 0.45, "Parasol mushroom": 0.45, "Ramshead": 0.45
+        };
+
+        // State Variables
+        let shopSelected = null;
+        let shopCart = [];
+        let craftSelected = null;
+        let seedSelected = null;
+
+        // ==========================================
+        // 🔄 NAVIGATION LOGIC
+        // ==========================================
+        function switchView(viewName) {
+            // Update Buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${viewName}`).classList.add('active');
+
+            // Update Views
+            document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
+            document.getElementById(`view-${viewName}`).classList.add('active');
+        }
+
+        // ==========================================
+        // 🛒 VIEW 1: SHOPPING LIST
+        // ==========================================
+        function renderShopCatalog() {
+            const search = document.getElementById('shop-search').value.toLowerCase();
+            const container = document.getElementById('shop-catalog');
+            container.innerHTML = '';
+
+            for (const [item, price] of Object.entries(PRODUCE_ITEMS)) {
+                if (item.toLowerCase().includes(search)) {
+                    const div = document.createElement('div');
+                    div.className = `item-card ${shopSelected === item ? 'selected' : ''}`;
+                    div.onclick = () => selectShopItem(item, div);
+                    div.innerHTML = `
+                        <div class="item-icon">${item.charAt(0)}</div>
+                        <div class="item-name">${item}</div>
+                        <div class="item-price">$${price.toFixed(2)}</div>
+                    `;
+                    container.appendChild(div);
+                }
+            }
+        }
+
+        function selectShopItem(item) {
+            shopSelected = item;
+            document.getElementById('lbl-shop-sel').innerText = `Selected: ${item}`;
+            renderShopCatalog(); // Re-render to update selected border
+        }
+
+        function addToCart() {
+            if (!shopSelected) return;
+            const qty = parseInt(document.getElementById('shop-qty').value) || 1;
+            const price = PRODUCE_ITEMS[shopSelected];
+            shopCart.push({ item: shopSelected, qty: qty, cost: price * qty });
+            
+            updateReceipt();
+        }
+
+        function updateReceipt() {
+            const receipt = document.getElementById('shop-receipt');
+            if (shopCart.length === 0) {
+                receipt.innerText = "Your cart is empty.";
+                return;
+            }
+
+            let text = "";
+            let total = 0;
+            shopCart.forEach(entry => {
+                text += `• ${entry.item} x${entry.qty} - $${entry.cost.toFixed(2)}\n`;
+                total += entry.cost;
+            });
+            text += `\n========================\nTotal Cost: $${total.toFixed(2)}`;
+            receipt.innerText = text;
+        }
+
+        // ==========================================
+        // 🛠️ VIEW 2: CRAFTING CALCULATOR
+        // ==========================================
+        function renderCraftCatalog() {
+            const search = document.getElementById('craft-search').value.toLowerCase();
+            const container = document.getElementById('craft-catalog');
+            container.innerHTML = '';
+
+            for (const recipe of Object.keys(RECIPES)) {
+                if (recipe.toLowerCase().includes(search)) {
+                    const div = document.createElement('div');
+                    div.className = `item-card ${craftSelected === recipe ? 'selected' : ''}`;
+                    div.onclick = () => selectCraftItem(recipe);
+                    div.innerHTML = `
+                        <div class="item-icon">${recipe.charAt(0)}</div>
+                        <div class="item-name">${recipe}</div>
+                    `;
+                    container.appendChild(div);
+                }
+            }
+        }
+
+        function selectCraftItem(recipe) {
+            craftSelected = recipe;
+            document.getElementById('lbl-craft-sel').innerText = `Selected: ${recipe}`;
+            renderCraftCatalog();
+        }
+
+        function calcCrafting() {
+            if (!craftSelected) return;
+            const qty = parseInt(document.getElementById('craft-qty').value) || 1;
+            const ingredients = RECIPES[craftSelected].ingredients;
+            
+            let text = `Ingredients for x${qty} ${craftSelected}:\n\n`;
+            for (const [item, reqQty] of Object.entries(ingredients)) {
+                text += `• ${item}: ${reqQty * qty}\n`;
+            }
+            document.getElementById('craft-receipt').innerText = text;
+        }
+
+        // ==========================================
+        // 🌾 VIEW 3: SEED CALCULATOR
+        // ==========================================
+        function renderSeedCatalog() {
+            const search = document.getElementById('seed-search').value.toLowerCase();
+            const container = document.getElementById('seed-catalog');
+            container.innerHTML = '';
+
+            for (const [crop, price] of Object.entries(CROPS)) {
+                if (crop.toLowerCase().includes(search)) {
+                    const div = document.createElement('div');
+                    div.className = `item-card ${seedSelected === crop ? 'selected' : ''}`;
+                    div.onclick = () => selectSeedItem(crop, price);
+                    div.innerHTML = `
+                        <div class="item-icon">${crop.charAt(0)}</div>
+                        <div class="item-name">${crop}</div>
+                        <div class="item-price">$${price.toFixed(2)}/seed</div>
+                    `;
+                    container.appendChild(div);
+                }
+            }
+        }
+
+        function selectSeedItem(crop, price) {
+            seedSelected = crop;
+            document.getElementById('lbl-seed-sel').innerText = `Selected: ${crop}`;
+            document.getElementById('lbl-seed-info').innerText = `Seed Price: $${price.toFixed(2)} | Yield: 3 per seed (Bundles of 5)`;
+            renderSeedCatalog();
+            calcSeeds(); // Auto-calculate on select if quantity is already typed
+        }
+
+        function calcSeeds() {
+            if (!seedSelected) return;
+            const desiredHarvest = parseInt(document.getElementById('seed-qty').value) || 0;
+            const seedPrice = CROPS[seedSelected];
+            const YIELD_PER_SEED = 3;
+
+            let seedsNeeded = 0;
+            if (desiredHarvest > 0) {
+                let rawSeeds = desiredHarvest / YIELD_PER_SEED;
+                // Round up to nearest multiple of 5 (seed bundles)
+                seedsNeeded = Math.ceil(rawSeeds / 5) * 5; 
+            }
+
+            const totalCost = seedsNeeded * seedPrice;
+
+            document.getElementById('res-seeds').innerText = `${seedsNeeded.toLocaleString()} Seeds`;
+            document.getElementById('res-cost').innerText = `$${totalCost.toFixed(2)}`;
+        }
+
+        // Initialize all catalogs on load
+        window.onload = () => {
+            renderShopCatalog();
+            renderCraftCatalog();
+            renderSeedCatalog();
+        };
+    </script>
+</body>
+</html>
