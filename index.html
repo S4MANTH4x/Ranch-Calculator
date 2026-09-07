@@ -433,6 +433,7 @@
             updateReceipt();
         }
 
+        // --- UPDATED FUNCTION ---
         function updateReceipt() {
             const receipt = document.getElementById('shop-receipt');
             if (shopCart.length === 0) {
@@ -440,7 +441,8 @@
                 return;
             }
 
-            let text = "";
+            // Added the formatting header here
+            let text = "Dewberry Creek Farm Order\n========================\n";
             let total = 0;
             shopCart.forEach(entry => {
                 text += `• ${entry.item} x${entry.qty} - $${entry.cost.toFixed(2)}\n`;
